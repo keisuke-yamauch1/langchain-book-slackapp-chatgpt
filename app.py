@@ -24,16 +24,22 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
     def __init__(self, channel, ts):
         self.channel = channel
         self.ts = ts
+        self.interval = CHAT_UPDATE_INTERVAL_SEC
+        self.update_count = 0
 
     def on_llm_new_token(self, token: str, **kwargs) -> None:
         self.message += token
 
         now = time.time()
-        if now - self.last_send_time > CHAT_UPDATE_INTERVAL_SEC:
-            self.last_send_time = now
+        if now - self.last_send_time > self.interval:
             app.client.chat_update(
-                channel=self.channel, ts=self.ts, text=f"{self.message}..."
+                channel=self.channel, ts=self.ts, text=f"{self.message}\n\nTyping..."
             )
+            self.last_send_time = now
+            self.update_count += 1
+
+            if self.update_count / 10 > self.interval:
+                self.interval = self.interval * 2
 
     def on_llm_end(self, response: LLMResult, **kwargs: Any) -> Any:
         app.client.chat_update(channel=self.channel, ts=self.ts, text=self.message)
@@ -41,9 +47,9 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
 
 load_dotenv()
 
-SlackRequestHandler.clear_al_log_handlers()
+SlackRequestHandler.clear_all_log_handlers()
 logging.basicConfig(
-    format="%(asctime)s [%(levelnames)s] %(message)s", level=logging.INFO
+    format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO
 )
 logger = logging.getLogger(__name__)
 
