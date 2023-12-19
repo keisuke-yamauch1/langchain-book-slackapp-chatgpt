@@ -8,6 +8,11 @@ WORKDIR /usr/src/app
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
+# デプロイ用
+RUN apt update \
+    && apt install -y nodejs npm \
+    && npm install -g serverless
+
 # アプリケーションのソースをコピー
 COPY . .
 
