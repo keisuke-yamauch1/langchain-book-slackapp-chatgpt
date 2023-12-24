@@ -16,6 +16,20 @@ from typing import Any
 
 CHAT_UPDATE_INTERVAL_SEC = 1
 
+load_dotenv()
+
+SlackRequestHandler.clear_all_log_handlers()
+logging.basicConfig(
+    format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO
+)
+logger = logging.getLogger(__name__)
+
+app = App(
+    signing_secret=os.environ["SLACK_SIGNING_SECRET"],
+    token=os.environ.get("SLACK_BOT_TOKEN"),
+    process_before_response=True,
+)
+
 
 class SlackStreamingCallbackHandler(BaseCallbackHandler):
     last_send_time = time.time()
@@ -57,21 +71,6 @@ class SlackStreamingCallbackHandler(BaseCallbackHandler):
             text=self.message,
             blocks=message_blocks,
         )
-
-
-load_dotenv()
-
-SlackRequestHandler.clear_all_log_handlers()
-logging.basicConfig(
-    format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO
-)
-logger = logging.getLogger(__name__)
-
-app = App(
-    signing_secret=os.environ["SLACK_SIGNING_SECRET"],
-    token=os.environ.get("SLACK_BOT_TOKEN"),
-    process_before_response=True,
-)
 
 
 # @app.event("app_mention")
