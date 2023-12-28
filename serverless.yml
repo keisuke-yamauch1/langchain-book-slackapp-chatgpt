@@ -12,6 +12,7 @@ provider:
           Action:
             - lambda:InvokeFunction
           Resource: "*"
+  architecture: arm64
 
 package:
   patterns:
